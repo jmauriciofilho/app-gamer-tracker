@@ -1,0 +1,36 @@
+name: game_tracker
+description: Meu rastreador de jogos pessoal em Flutter.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.10.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Banco de Dados Local
+  isar: ^3.1.0+1
+  isar_community_flutter_libs: ^3.1.0+1
+  path_provider: ^2.1.0
+
+  # Gerenciamento de Estado
+  flutter_riverpod: ^2.5.0
+
+  # Componentes de UI
+  cached_network_image: ^3.3.0
+  flutter_rating_bar: ^4.0.1
+  google_fonts: ^6.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+  
+  # Geradores de Código
+  isar_generator: ^3.1.0+1
+  build_runner: ^2.4.0
+
+flutter:
+  uses-material-design: true
