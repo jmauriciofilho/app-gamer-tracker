@@ -1,4 +1,4 @@
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 
 // Este 'part' faz o Isar entender que vai gerar o arquivo 'game.g.dart' automaticamente.
 part 'game.g.dart';

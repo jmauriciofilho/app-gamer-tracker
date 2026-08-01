@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'features/games/presentation/screens/home_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
-  runApp(
-    // O ProviderScope armazena o estado de todos os providers do aplicativo
-    const ProviderScope(child: MyApp()),
-  );
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -18,10 +16,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Rastreador de Games',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark(useMaterial3: true), // Suporte a Dark Mode ativado
-      home: const Scaffold(
-        body: Center(child: Text('Ambiente Riverpod + Isar Configurado!')),
-      ),
+      theme: ThemeData.dark(useMaterial3: true),
+      home: const HomeScreen(),
     );
   }
 }

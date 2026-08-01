@@ -1,4 +1,4 @@
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 
 // O Isar vai gerar o arquivo 'custom_list.g.dart'
 part 'custom_list.g.dart';

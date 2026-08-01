@@ -1,0 +1,259 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/game_list_provider.dart';
+import '../widgets/game_card.dart';
+
+class HomeScreen extends ConsumerStatefulWidget {
+  const HomeScreen({super.key});
+
+  @override
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  int _currentIndex = 0; // Controla a aba ativa na BottomNavigationBar
+  String? _selectedStatusFilter; // Status selecionado nos chips
+
+  // Lista de status para os chips de filtro
+  final List<Map<String, String>> _statusFilters = [
+    {'id': '', 'label': 'Todos'},
+    {'id': 'para_jogar', 'label': 'Para Jogar'},
+    {'id': 'jogando', 'label': 'Jogando'},
+    {'id': 'jogado', 'label': 'Jogado'},
+    {'id': 'finalizado', 'label': 'Finalizado'},
+    {'id': '100%', 'label': '100%'},
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Rastreador de Games'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.cloud_sync),
+            tooltip: 'Sincronizar Google Drive',
+            onPressed: () {
+              // Navegará para a aba de backup/sync futuramente
+              setState(() => _currentIndex = 2);
+            },
+          ),
+        ],
+      ),
+
+      // Exibe a aba baseada no índice atual
+      body: IndexedStack(
+        index: _currentIndex,
+        children: [
+          _buildLibraryTab(), // Aba 1: Biblioteca Geral
+          _buildCustomListsTab(), // Aba 2: Minhas Listas Personalizadas
+          _buildSettingsTab(), // Aba 3: Configurações & Drive Sync
+        ],
+      ),
+
+      // Botão Flutuante (Apenas na Aba 1 de Biblioteca)
+      floatingActionButton: _currentIndex == 0
+          ? FloatingActionButton.extended(
+              onPressed: () {
+                // TODO: Navegar para a Tela de Formulário de Cadastro
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Abrir Formulário de Cadastro')),
+                );
+              },
+              icon: const Icon(Icons.add),
+              label: const Text('Novo Jogo'),
+            )
+          : null,
+
+      // Navegação Inferior (3 Abas)
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _currentIndex,
+        onDestinationSelected: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.sports_esports_outlined),
+            selectedIcon: Icon(Icons.sports_esports),
+            label: 'Biblioteca',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.style_outlined),
+            selectedIcon: Icon(Icons.style),
+            label: 'Minhas Listas',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.settings_outlined),
+            selectedIcon: Icon(Icons.settings),
+            label: 'Ajustes & Sync',
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ==========================================
+  // ABA 1: BIBLIOTECA GERAL DE JOGOS
+  // ==========================================
+  Widget _buildLibraryTab() {
+    // Escuta o estado do gameListProvider
+    final gamesState = ref.watch(gameListProvider);
+
+    return Column(
+      children: [
+        // 1. Barra de Busca Rápida
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: TextField(
+            onChanged: (value) {
+              ref.read(gameListProvider.notifier).search(value);
+            },
+            decoration: InputDecoration(
+              hintText: 'Buscar jogo por nome...',
+              prefixIcon: const Icon(Icons.search),
+              filled: true,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: EdgeInsets.zero,
+            ),
+          ),
+        ),
+
+        // 2. Chips de Filtro Horizontal por Status
+        SizedBox(
+          height: 50,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: _statusFilters.length,
+            itemBuilder: (context, index) {
+              final filter = _statusFilters[index];
+              final isSelected = (_selectedStatusFilter ?? '') == filter['id'];
+
+              return Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: FilterChip(
+                  label: Text(filter['label']!),
+                  selected: isSelected,
+                  onSelected: (selected) {
+                    final newFilter = filter['id']!.isEmpty
+                        ? null
+                        : filter['id'];
+                    setState(() {
+                      _selectedStatusFilter = newFilter;
+                    });
+                    ref
+                        .read(gameListProvider.notifier)
+                        .filterByStatus(newFilter);
+                  },
+                ),
+              );
+            },
+          ),
+        ),
+
+        const SizedBox(height: 8),
+
+        // 3. Grid de Jogos (Consumindo o Riverpod)
+        // 3. Grid de Jogos (Consumindo o Riverpod)
+        Expanded(
+          child: gamesState.when(
+            data: (games) {
+              if (games.isEmpty) {
+                // Adicionado 'const' na raiz do widget do Center
+                return const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.videogame_asset_off,
+                        size: 64,
+                        color: Colors.grey,
+                      ),
+                      SizedBox(height: 16),
+                      Text(
+                        'Nenhum jogo encontrado.',
+                        style: TextStyle(color: Colors.grey, fontSize: 16),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              return GridView.builder(
+                padding: const EdgeInsets.all(16),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2, // 2 colunas
+                  childAspectRatio: 0.7, // Proporção do card da capa
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                ),
+                itemCount: games.length,
+                itemBuilder: (context, index) {
+                  final game = games[index];
+                  return GameCard(
+                    game: game,
+                    onTap: () {
+                      // TODO: Abrir Tela de Detalhes do Jogo
+                    },
+                  );
+                },
+              );
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (err, stack) =>
+                Center(child: Text('Erro ao carregar jogos: $err')),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ==========================================
+  // ABA 2: LISTAS PERSONALIZADAS
+  // ==========================================
+  Widget _buildCustomListsTab() {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.filter_list, size: 64, color: Colors.grey),
+          SizedBox(height: 16),
+          Text('Suas Listas Personalizadas aparecerão aqui!'),
+        ],
+      ),
+    );
+  }
+
+  // ==========================================
+  // ABA 3: CONFIGURAÇÕES E SYNC GOOGLE DRIVE
+  // ==========================================
+  Widget _buildSettingsTab() {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        const ListTile(
+          leading: Icon(Icons.account_circle, size: 40),
+          title: Text('Conta do Google'),
+          subtitle: Text('Não conectado'),
+        ),
+        const Divider(),
+        ElevatedButton.icon(
+          onPressed: () {},
+          icon: const Icon(Icons.cloud_upload),
+          label: const Text('Fazer Backup no Google Drive'),
+        ),
+        const SizedBox(height: 8),
+        OutlinedButton.icon(
+          onPressed: () {},
+          icon: const Icon(Icons.cloud_download),
+          label: const Text('Restaurar do Google Drive'),
+        ),
+      ],
+    );
+  }
+}

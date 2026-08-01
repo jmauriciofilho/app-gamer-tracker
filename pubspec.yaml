@@ -10,10 +10,10 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # Banco de Dados Local
-  isar: ^3.1.0+1
-  isar_community_flutter_libs: ^3.1.0+1
-  path_provider: ^2.1.0
+  # Banco de Dados Local (Suíte da Comunidade)
+  isar_community: ^3.3.2
+  isar_community_flutter_libs: ^3.3.2
+  path_provider: ^2.1.2
 
   # Gerenciamento de Estado
   flutter_riverpod: ^2.5.0
@@ -28,9 +28,11 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^3.0.0
   
-  # Geradores de Código
-  isar_generator: ^3.1.0+1
-  build_runner: ^2.4.0
+  # Geradores do Isar v4
+  build_runner: ^2.4.8
+  
+  # Gerador da Comunidade 100% Compatível
+  isar_community_generator: ^3.3.2
 
 flutter:
   uses-material-design: true
