@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/game_list_provider.dart';
 import '../widgets/game_card.dart';
+import 'game_form_screen.dart';
+import 'game_detail_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -55,9 +57,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       floatingActionButton: _currentIndex == 0
           ? FloatingActionButton.extended(
               onPressed: () {
-                // TODO: Navegar para a Tela de Formulário de Cadastro
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Abrir Formulário de Cadastro')),
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const GameFormScreen(),
+                  ),
                 );
               },
               icon: const Icon(Icons.add),
@@ -159,7 +162,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         const SizedBox(height: 8),
 
         // 3. Grid de Jogos (Consumindo o Riverpod)
-        // 3. Grid de Jogos (Consumindo o Riverpod)
         Expanded(
           child: gamesState.when(
             data: (games) {
@@ -198,7 +200,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   return GameCard(
                     game: game,
                     onTap: () {
-                      // TODO: Abrir Tela de Detalhes do Jogo
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => GameDetailScreen(game: game),
+                        ),
+                      );
                     },
                   );
                 },

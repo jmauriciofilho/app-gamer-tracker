@@ -102,4 +102,10 @@ class GameRepository {
     // 6. Executa e retorna os jogos que atendem a TODOS os critérios
     return await query.findAll();
   }
+
+  /// Busca um jogo específico pelo seu ID no banco de dados Isar
+  Future<Game?> getGameById(int id) async {
+    final isar = await _db;
+    return await isar.games.get(id);
+  }
 }
