@@ -4,6 +4,8 @@ import '../providers/game_list_provider.dart';
 import '../widgets/game_card.dart';
 import 'game_form_screen.dart';
 import 'game_detail_screen.dart';
+import '../../../custom_lists/presentation/screens/custom_list_form_screen.dart';
+import '../../../custom_lists/presentation/screens/custom_lists_view.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -53,20 +55,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ],
       ),
 
-      // Botão Flutuante (Apenas na Aba 1 de Biblioteca)
-      floatingActionButton: _currentIndex == 0
-          ? FloatingActionButton.extended(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const GameFormScreen(),
-                  ),
-                );
-              },
-              icon: const Icon(Icons.add),
-              label: const Text('Novo Jogo'),
-            )
-          : null,
+      // Botão Flutuante (varia conforme a aba ativa)
+      floatingActionButton: _buildFloatingActionButton(),
 
       // Navegação Inferior (3 Abas)
       bottomNavigationBar: NavigationBar(
@@ -95,6 +85,36 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ],
       ),
     );
+  }
+
+  /// Retorna o FAB da aba ativa: "Novo Jogo" na Biblioteca e "Nova Lista" em Minhas Listas
+  Widget? _buildFloatingActionButton() {
+    switch (_currentIndex) {
+      case 0:
+        return FloatingActionButton.extended(
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const GameFormScreen()),
+            );
+          },
+          icon: const Icon(Icons.add),
+          label: const Text('Novo Jogo'),
+        );
+      case 1:
+        return FloatingActionButton.extended(
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => const CustomListFormScreen(),
+              ),
+            );
+          },
+          icon: const Icon(Icons.playlist_add),
+          label: const Text('Nova Lista'),
+        );
+      default:
+        return null;
+    }
   }
 
   // ==========================================
@@ -224,16 +244,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   // ABA 2: LISTAS PERSONALIZADAS
   // ==========================================
   Widget _buildCustomListsTab() {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.filter_list, size: 64, color: Colors.grey),
-          SizedBox(height: 16),
-          Text('Suas Listas Personalizadas aparecerão aqui!'),
-        ],
-      ),
-    );
+    return const CustomListsView();
   }
 
   // ==========================================
