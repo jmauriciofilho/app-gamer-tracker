@@ -56,26 +56,27 @@ class GameListNotifier extends AsyncNotifier<List<Game>> {
   // ==========================================
 
   /// Adiciona ou atualiza um jogo e recarrega a lista reativamente
+  /// Lança exceção se a gravação falhar, para a tela avisar o usuário
   Future<void> saveGame(Game game) async {
     final repository = ref.read(gameRepositoryProvider);
-    state = const AsyncValue.loading();
 
-    // O AsyncValue.guard captura exceções automaticamente e atualiza o estado para erro se falhar
-    state = await AsyncValue.guard(() async {
-      await repository.saveGame(game);
-      return _fetchGames();
-    });
+    // A escrita fica fora do guard: se falhar, a exceção chega à tela e a lista atual é preservada
+    await repository.saveGame(game);
+
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() => _fetchGames());
   }
 
   /// Exclui um jogo pelo ID e atualiza a UI
+  /// Lança exceção se a exclusão falhar, para a tela avisar o usuário
   Future<void> deleteGame(int id) async {
     final repository = ref.read(gameRepositoryProvider);
-    state = const AsyncValue.loading();
 
-    state = await AsyncValue.guard(() async {
-      await repository.deleteGame(id);
-      return _fetchGames();
-    });
+    // A exclusão fica fora do guard: se falhar, a exceção chega à tela e a lista atual é preservada
+    await repository.deleteGame(id);
+
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() => _fetchGames());
   }
 }
 

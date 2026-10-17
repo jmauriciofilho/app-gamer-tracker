@@ -281,9 +281,23 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
             style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
             onPressed: () async {
               Navigator.pop(ctx);
-              await ref
-                  .read(gameListProvider.notifier)
-                  .deleteGame(_currentGame.id);
+              try {
+                await ref
+                    .read(gameListProvider.notifier)
+                    .deleteGame(_currentGame.id);
+              } catch (_) {
+                // Falha na exclusão: avisa o usuário e mantém o detalhe aberto
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Não foi possível excluir o jogo. Tente novamente.',
+                      ),
+                    ),
+                  );
+                }
+                return;
+              }
               if (context.mounted) {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(

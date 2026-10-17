@@ -95,7 +95,18 @@ class _CustomListFormScreenState extends ConsumerState<CustomListFormScreen> {
     customList.filterStatus = _selectedStatus;
 
     // Aguarda a gravação no Isar antes de fechar a tela
-    await ref.read(customListProvider.notifier).saveCustomList(customList);
+    try {
+      await ref.read(customListProvider.notifier).saveCustomList(customList);
+    } catch (_) {
+      // Falha na gravação: avisa o usuário e mantém o formulário aberto
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Não foi possível salvar a lista. Tente novamente.'),
+        ),
+      );
+      return;
+    }
 
     if (!mounted) return;
 

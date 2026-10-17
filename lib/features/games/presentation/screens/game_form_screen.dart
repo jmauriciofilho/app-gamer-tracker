@@ -124,7 +124,18 @@ class _GameFormScreenState extends ConsumerState<GameFormScreen> {
       game.endDate = _endDate;
 
       // 2. AGUARDA a gravação no Isar ser concluída antes de prosseguir
-      await ref.read(gameListProvider.notifier).saveGame(game);
+      try {
+        await ref.read(gameListProvider.notifier).saveGame(game);
+      } catch (_) {
+        // Falha na gravação: avisa o usuário e mantém o formulário aberto
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Não foi possível salvar o jogo. Tente novamente.'),
+          ),
+        );
+        return;
+      }
 
       // 3. Verifica se o widget continua montado após a operação assíncrona
       if (!mounted) return;

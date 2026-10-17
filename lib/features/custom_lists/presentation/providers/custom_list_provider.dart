@@ -18,25 +18,27 @@ class CustomListNotifier extends AsyncNotifier<List<CustomList>> {
   }
 
   /// Salva uma nova lista de filtro personalizado
+  /// Lança exceção se a gravação falhar, para a tela avisar o usuário
   Future<void> saveCustomList(CustomList customList) async {
     final repository = ref.read(customListRepositoryProvider);
-    state = const AsyncValue.loading();
 
-    state = await AsyncValue.guard(() async {
-      await repository.saveCustomList(customList);
-      return _fetchCustomLists();
-    });
+    // A escrita fica fora do guard: se falhar, a exceção chega à tela e as listas atuais são preservadas
+    await repository.saveCustomList(customList);
+
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() => _fetchCustomLists());
   }
 
   /// Exclui uma lista de filtro
+  /// Lança exceção se a exclusão falhar, para a tela avisar o usuário
   Future<void> deleteCustomList(int id) async {
     final repository = ref.read(customListRepositoryProvider);
-    state = const AsyncValue.loading();
 
-    state = await AsyncValue.guard(() async {
-      await repository.deleteCustomList(id);
-      return _fetchCustomLists();
-    });
+    // A exclusão fica fora do guard: se falhar, a exceção chega à tela e as listas atuais são preservadas
+    await repository.deleteCustomList(id);
+
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() => _fetchCustomLists());
   }
 }
 

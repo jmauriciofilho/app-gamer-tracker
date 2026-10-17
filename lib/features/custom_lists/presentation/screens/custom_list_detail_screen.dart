@@ -151,9 +151,21 @@ class CustomListDetailScreen extends ConsumerWidget {
               final messenger = ScaffoldMessenger.of(context);
               final navigator = Navigator.of(context);
 
-              await ref
-                  .read(customListProvider.notifier)
-                  .deleteCustomList(customList.id);
+              try {
+                await ref
+                    .read(customListProvider.notifier)
+                    .deleteCustomList(customList.id);
+              } catch (_) {
+                // Falha na exclusão: avisa o usuário e mantém o detalhe aberto
+                messenger.showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      'Não foi possível excluir a lista. Tente novamente.',
+                    ),
+                  ),
+                );
+                return;
+              }
 
               navigator.pop();
               messenger.showSnackBar(
