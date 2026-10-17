@@ -190,7 +190,7 @@ class _GameFormScreenState extends ConsumerState<GameFormScreen> {
 
               // 3. STATUS DO JOGO (Dropdown)
               DropdownButtonFormField<String>(
-                value: _selectedStatus,
+                initialValue: _selectedStatus,
                 decoration: const InputDecoration(
                   labelText: 'Status do Jogo',
                   border: OutlineInputBorder(),
