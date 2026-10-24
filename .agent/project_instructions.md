@@ -15,10 +15,10 @@
   - **Framework Core:** Flutter (Material 3, tema `ThemeData.dark`)
   - **Gerenciador de pacotes:** pub (`flutter pub`)
   - **Ferramentas Auxiliares:**
-    - Estado: `flutter_riverpod` ^2.5.0 (`Provider`, `AsyncNotifierProvider`)
+    - Estado: `flutter_riverpod` ^2.5.0 (lock 2.6.1; `Provider`, `AsyncNotifierProvider`, `FutureProvider`/`.family`)
     - Estilização: Material 3 + `google_fonts`, `cached_network_image`, `flutter_rating_bar`
     - Banco de Dados / ORM: Isar Community (`isar_community` ^3.3.2) local, via `path_provider`; schemas gerados por `isar_community_generator` + `build_runner` (arquivos `*.g.dart`)
-    - Testes: `flutter_test` (único teste existente, `test/widget_test.dart`, é o template de contador e está desatualizado)
+    - Testes: `flutter_test` com repositórios falsos em memória via `ProviderScope(overrides: ...)` (`test/widget_test.dart`, `test/features/`)
 </tech_stack>
 
 <commands>
@@ -39,9 +39,10 @@
     - `lib/features/<feature>/data/models/` — coleções Isar (`@collection`) + `*.g.dart` gerados (não editar à mão).
     - `lib/features/<feature>/data/repositories/` — acesso ao Isar (escrita sempre em `writeTxn`).
     - `lib/features/<feature>/presentation/{providers,screens,widgets}/` — providers Riverpod, telas e widgets.
-    - Features atuais: `games` (CRUD completo + busca/filtro por status) e `custom_lists` (model, repository e provider; sem telas ainda).
-    - `test/` — testes `flutter_test`.
-  - **Pontos de entrada:** `lib/main.dart` (`ProviderScope` → `MyApp` → `HomeScreen`).
+    - Features atuais: `games` (CRUD completo + busca/filtro por status) e `custom_lists` (CRUD de listas por filtros; telas de lista, detalhe e formulário).
+    - Providers de repositório das duas features: `lib/features/games/presentation/providers/game_repository_provider.dart`.
+    - `test/` — testes `flutter_test` (`widget_test.dart` + `test/features/<feature>/`).
+  - **Pontos de entrada:** `lib/main.dart` (`ProviderScope` → `MyApp` → `HomeScreen`, com `NavigationBar` + `IndexedStack` nas abas Jogos e Listas).
 </architecture>
 
 <coding_guidelines>
@@ -54,8 +55,8 @@
 </coding_guidelines>
 
 <git_conventions>
-  - **Branches:** histórico usa apenas `main`. Para novas tarefas: `feat/<slug>`, `fix/<slug>`, `chore/<slug>`.
-  - **Commits:** histórico atual em pt-BR, minúsculas e sem prefixo (ex.: "criando tela home"). Daqui em diante: Conventional Commits (feat, fix, refactor, test, docs, chore) com mensagens em pt-BR.
+  - **Branches:** `main` + branches por tarefa: `feat/<slug>`, `fix/<slug>`, `chore/<slug>`.
+  - **Commits:** Conventional Commits (feat, fix, refactor, test, docs, chore) em pt-BR e minúsculas, com escopo opcional (ex.: `feat(custom-lists): ...`). Commits antigos não têm prefixo.
   - **PRs:** N/A (sem template nem CI no repositório).
 </git_conventions>
 
