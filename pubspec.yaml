@@ -40,5 +40,22 @@ dev_dependencies:
   # Gerador da Comunidade 100% Compatível
   isar_community_generator: ^3.3.2
 
+  # Gerador dos ícones do app (dart run flutter_launcher_icons)
+  flutter_launcher_icons: ^0.14.4
+
 flutter:
   uses-material-design: true
+
+# Ícone do app gerado a partir de assets/icon (fontes em SVG ao lado dos PNGs)
+flutter_launcher_icons:
+  image_path: "assets/icon/app_icon.png"
+  android: true
+  adaptive_icon_background: "#381E72"
+  adaptive_icon_foreground: "assets/icon/app_icon_foreground.png"
+  # O foreground já vem com margem (zona segura), então sem inset extra
+  adaptive_icon_foreground_inset: 0
+  ios: true
+  remove_alpha_ios: true
+  background_color_ios: "#381E72"
+  macos:
+    generate: true
