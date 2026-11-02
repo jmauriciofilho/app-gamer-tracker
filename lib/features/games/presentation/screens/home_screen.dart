@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/game_status.dart';
 import '../providers/game_list_provider.dart';
+import '../providers/game_sort_order.dart';
 import '../widgets/game_card.dart';
 import 'game_form_screen.dart';
 import 'game_detail_screen.dart';
@@ -116,6 +117,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
+  /// Menu "Ordenar" da Biblioteca, com a ordem atual marcada
+  Widget _buildSortMenu() {
+    final notifier = ref.read(gameListProvider.notifier);
+
+    return PopupMenuButton<GameSortOrder>(
+      icon: const Icon(Icons.sort),
+      tooltip: 'Ordenar',
+      onSelected: notifier.sortBy,
+      itemBuilder: (context) => [
+        for (final order in GameSortOrder.values)
+          CheckedPopupMenuItem(
+            value: order,
+            checked: notifier.sortOrder == order,
+            child: Text(order.label),
+          ),
+      ],
+    );
+  }
+
   // ==========================================
   // ABA 1: BIBLIOTECA GERAL DE JOGOS
   // ==========================================
@@ -125,23 +145,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Column(
       children: [
-        // 1. Barra de Busca Rápida
+        // 1. Barra de Busca Rápida + menu de ordenação
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-          child: TextField(
-            onChanged: (value) {
-              ref.read(gameListProvider.notifier).search(value);
-            },
-            decoration: InputDecoration(
-              hintText: 'Buscar jogo por nome...',
-              prefixIcon: const Icon(Icons.search),
-              filled: true,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  onChanged: (value) {
+                    ref.read(gameListProvider.notifier).search(value);
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Buscar jogo por nome...',
+                    prefixIcon: const Icon(Icons.search),
+                    filled: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
               ),
-              contentPadding: EdgeInsets.zero,
-            ),
+              _buildSortMenu(),
+            ],
           ),
         ),
 

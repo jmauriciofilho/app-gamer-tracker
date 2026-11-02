@@ -1,0 +1,28 @@
+# 📋 Mini-Spec: Ordenação da Biblioteca
+
+- **Tamanho:** pequena | **Status:** Done | **Data:** 2026-11-02
+- **Objetivo (1 frase):** permitir escolher a ordem dos jogos na Biblioteca (Recentes, Título A–Z, Maior nota), aplicada igualmente a "Todos", ao filtro de status e à busca. Hoje cada modo tem uma ordem diferente: data de criação, título e nenhuma ordem definida, respectivamente.
+- **Arquivos:**
+  - `lib/features/games/presentation/providers/game_sort_order.dart` — criar: `enum GameSortOrder` (rótulo + comparador).
+  - `lib/features/games/presentation/providers/game_list_provider.dart` — editar: campo `_sortOrder`, getter `sortOrder`, método `sortBy(order)`; `_fetchGames` ordena o resultado em Dart.
+  - `lib/features/games/presentation/screens/home_screen.dart` — editar: botão `PopupMenuButton` (ícone `sort`, tooltip "Ordenar") ao lado da busca, com a opção atual marcada.
+  - `test/features/games/game_sort_test.dart` — criar: testes dos ACs.
+  - `test/features/backup/backup_section_test.dart` — ajuste mecânico (autorizado na execução): o AC5 do backup dependia da ordem antiga; os jogos importados ganharam `createdAt` fixo e o teste rola até cada título.
+- **Decisões do discovery:** três opções; direção fixa (sem botão de inverter); a escolha não é lembrada ao reabrir o app (volta para "Recentes").
+- **Fora de escopo:** ordenar o detalhe das listas personalizadas; persistir a escolha; inverter a direção; mudar consultas no `GameRepository`.
+- **Critérios de aceite:**
+  - [x] AC1: ao abrir o app, a Biblioteca mostra "Recentes" (`createdAt` mais novo primeiro) e esse item vem marcado no menu "Ordenar".
+  - [x] AC2: "Título A–Z" ordena sem diferenciar maiúsculas ("alan wake" vem antes de "Bloodborne"). "Maior nota" ordena pela nota decrescente, com empate desempatado pelo título A–Z.
+  - [x] AC3: a ordem escolhida continua valendo ao filtrar por status e ao buscar por nome.
+  - [x] AC4: salvar ou excluir um jogo mantém a ordem escolhida.
+  - [x] AC5: `flutter analyze` sem nenhuma issue e `flutter test` verde.
+- **Plano:**
+  - [x] 1. `GameSortOrder` com rótulos e comparadores.
+  - [x] 2. Notifier: `_sortOrder`, `sortBy`, ordenação no `_fetchGames`.
+  - [x] 3. Menu "Ordenar" na Biblioteca.
+  - [x] 4. Testes AC1–AC4 em `test/features/games/game_sort_test.dart`.
+  - [x] 5. Rodar `verify.sh` e conferir no emulador.
+- **Riscos:**
+  - Ordenar em Dart, e não no Isar, custa O(n log n) a cada recarga → aceitável para uma biblioteca pessoal (centenas de jogos). Mantém o `GameRepository` intacto e funciona igual nos fakes.
+  - A ordem de "Todos" já era `createdAt` desc no repositório, então "Recentes" mantém o comportamento atual. No filtro de status, que hoje ordena por título, o padrão passa a ser "Recentes": é uma mudança visível pequena, e de propósito, para ficar consistente.
+- **Validação:** `verify.sh` verde (lint, 43 testes, build); menu conferido no emulador `Pixel_9` em 2026-11-02 (opção atual marcada).

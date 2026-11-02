@@ -2,12 +2,17 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/game.dart';
 import 'game_repository_provider.dart';
+import 'game_sort_order.dart';
 
 /// Notifier responsável por gerenciar a lista de jogos exibida na UI
 class GameListNotifier extends AsyncNotifier<List<Game>> {
   // Guarda os filtros ativos no momento
   String? _selectedStatus;
   String _searchQuery = '';
+  GameSortOrder _sortOrder = GameSortOrder.recent;
+
+  /// Ordem aplicada atualmente na Biblioteca (padrão: Recentes)
+  GameSortOrder get sortOrder => _sortOrder;
 
   @override
   FutureOr<List<Game>> build() async {
@@ -15,8 +20,15 @@ class GameListNotifier extends AsyncNotifier<List<Game>> {
     return _fetchGames();
   }
 
-  /// Método privado para buscar jogos baseando-se nos filtros ativos
+  /// Método privado para buscar jogos baseando-se nos filtros ativos,
+  /// já ordenados pela ordem escolhida (a mesma em todos os modos)
   Future<List<Game>> _fetchGames() async {
+    final games = await _fetchFilteredGames();
+    // Ordena uma cópia para não alterar a lista devolvida pelo repositório
+    return List.of(games)..sort(_sortOrder.compare);
+  }
+
+  Future<List<Game>> _fetchFilteredGames() async {
     final repository = ref.read(gameRepositoryProvider);
 
     // Se houver busca por texto, prioriza a busca por título
@@ -40,6 +52,13 @@ class GameListNotifier extends AsyncNotifier<List<Game>> {
   /// Filtra os jogos pelo status ('para_jogar', 'jogando', 'jogado', 'finalizado', '100%')
   Future<void> filterByStatus(String? status) async {
     _selectedStatus = status;
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() => _fetchGames());
+  }
+
+  /// Muda a ordem da Biblioteca mantendo os filtros ativos
+  Future<void> sortBy(GameSortOrder order) async {
+    _sortOrder = order;
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() => _fetchGames());
   }

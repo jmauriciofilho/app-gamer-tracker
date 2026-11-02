@@ -266,10 +266,11 @@ void main() {
       gateway = FakeBackupFileGateway()
         ..pickBytes = BackupCodec.encode(
           BackupData(
+            // Datas fixas: em "Recentes" a Biblioteca mostra nesta mesma ordem
             games: [
-              _game(10, 'Hollow Knight'),
-              _game(11, 'Celeste'),
-              _game(12, 'Hades'),
+              _game(10, 'Hollow Knight')..createdAt = DateTime(2026, 1, 3),
+              _game(11, 'Celeste')..createdAt = DateTime(2026, 1, 2),
+              _game(12, 'Hades')..createdAt = DateTime(2026, 1, 1),
             ],
             customLists: [_list(10, 'Indies'), _list(11, 'Roguelikes')],
           ),
@@ -336,20 +337,22 @@ void main() {
       await tester.tap(find.text('Biblioteca'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Hollow Knight'), findsOneWidget);
-      expect(find.text('Celeste'), findsOneWidget);
-      // A lista é preguiçosa e o terceiro card fica abaixo da área do teste (800×600)
-      await tester.scrollUntilVisible(
-        find.text('Hades'),
-        200,
-        scrollable: find
-            .descendant(
-              of: find.byType(GridView),
-              matching: find.byType(Scrollable),
-            )
-            .first,
-      );
-      expect(find.text('Hades'), findsOneWidget);
+      // A lista é preguiçosa e o grid de 800×600 só mostra uma fileira de cards:
+      // rola para baixo até cada título, na ordem exibida
+      final grid = find
+          .descendant(
+            of: find.byType(GridView),
+            matching: find.byType(Scrollable),
+          )
+          .first;
+      for (final title in ['Hollow Knight', 'Celeste', 'Hades']) {
+        await tester.scrollUntilVisible(
+          find.text(title),
+          200,
+          scrollable: grid,
+        );
+        expect(find.text(title), findsOneWidget);
+      }
       expect(find.text('Doom'), findsNothing);
     });
   });
