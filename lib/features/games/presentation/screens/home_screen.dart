@@ -9,6 +9,7 @@ import 'game_detail_screen.dart';
 import '../../../custom_lists/presentation/screens/custom_list_form_screen.dart';
 import '../../../custom_lists/presentation/screens/custom_lists_view.dart';
 import '../../../backup/presentation/widgets/backup_section.dart';
+import '../../../stats/presentation/screens/stats_view.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -18,6 +19,9 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
+  // Posição da aba Ajustes & Sync na barra (destino do atalho de backup da AppBar)
+  static const int _settingsTabIndex = 3;
+
   int _currentIndex = 0; // Controla a aba ativa na BottomNavigationBar
   String? _selectedStatusFilter; // Status selecionado nos chips
 
@@ -39,7 +43,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             tooltip: 'Backup',
             onPressed: () {
               // Leva à aba Configurações, onde fica o backup local
-              setState(() => _currentIndex = 2);
+              setState(() => _currentIndex = _settingsTabIndex);
             },
           ),
         ],
@@ -51,14 +55,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         children: [
           _buildLibraryTab(), // Aba 1: Biblioteca Geral
           _buildCustomListsTab(), // Aba 2: Minhas Listas Personalizadas
-          _buildSettingsTab(), // Aba 3: Configurações & Backup local
+          const StatsView(), // Aba 3: Estatísticas da biblioteca
+          _buildSettingsTab(), // Aba 4: Configurações & Backup local
         ],
       ),
 
       // Botão Flutuante (varia conforme a aba ativa)
       floatingActionButton: _buildFloatingActionButton(),
 
-      // Navegação Inferior (3 Abas)
+      // Navegação Inferior (4 Abas)
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
         onDestinationSelected: (index) {
@@ -76,6 +81,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             icon: Icon(Icons.style_outlined),
             selectedIcon: Icon(Icons.style),
             label: 'Minhas Listas',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.insights_outlined),
+            selectedIcon: Icon(Icons.insights),
+            label: 'Estatísticas',
           ),
           NavigationDestination(
             icon: Icon(Icons.settings_outlined),

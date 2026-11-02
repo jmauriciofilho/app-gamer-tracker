@@ -41,10 +41,10 @@
     - `lib/features/<feature>/data/models/` — coleções Isar (`@collection`) + `*.g.dart` gerados (não editar à mão).
     - `lib/features/<feature>/data/repositories/` — acesso ao Isar (escrita sempre em `writeTxn`).
     - `lib/features/<feature>/presentation/{providers,screens,widgets}/` — providers Riverpod, telas e widgets.
-    - Features atuais: `games` (CRUD completo + busca/filtro por status), `custom_lists` (CRUD de listas por filtros; telas de lista, detalhe e formulário), `game_lookup` (busca de dados do jogo no Wikidata + capa da Steam, aberta pelo botão no título do formulário de jogo; `GameLookupService`, `WikidataGameLookupService`, `GameLookupSheet`) e `backup` (exportar/importar tudo em JSON; `BackupCodec`, `BackupRepository`, `BackupFileGateway` e `BackupSection` na aba Configurações).
+    - Features atuais: `games` (CRUD completo + busca/filtro por status), `custom_lists` (CRUD de listas por filtros; telas de lista, detalhe e formulário), `stats` (aba Estatísticas: `GameStats.fromGames` puro + `gameStatsProvider`, que lê a biblioteca inteira e observa `gameListProvider`; barras com `LinearProgressIndicator`, sem lib de gráficos), `game_lookup` (busca de dados do jogo no Wikidata + capa da Steam, aberta pelo botão no título do formulário de jogo; `GameLookupService`, `WikidataGameLookupService`, `GameLookupSheet`) e `backup` (exportar/importar tudo em JSON; `BackupCodec`, `BackupRepository`, `BackupFileGateway` e `BackupSection` na aba Configurações).
     - Providers de repositório das duas features: `lib/features/games/presentation/providers/game_repository_provider.dart`.
     - `test/` — testes `flutter_test` (`widget_test.dart` + `test/features/<feature>/`).
-  - **Pontos de entrada:** `lib/main.dart` (`ProviderScope` → `MyApp` → `HomeScreen`, com `NavigationBar` + `IndexedStack` nas abas Biblioteca, Minhas Listas e Ajustes & Sync, esta com o backup local).
+  - **Pontos de entrada:** `lib/main.dart` (`ProviderScope` → `MyApp` → `HomeScreen`, com `NavigationBar` + `IndexedStack` nas abas Biblioteca, Minhas Listas, Estatísticas e Ajustes & Sync, esta com o backup local; o atalho de backup da AppBar usa `_settingsTabIndex`).
 </architecture>
 
 <coding_guidelines>
