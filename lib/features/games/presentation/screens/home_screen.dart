@@ -7,6 +7,7 @@ import 'game_form_screen.dart';
 import 'game_detail_screen.dart';
 import '../../../custom_lists/presentation/screens/custom_list_form_screen.dart';
 import '../../../custom_lists/presentation/screens/custom_lists_view.dart';
+import '../../../backup/presentation/widgets/backup_section.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -34,9 +35,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.cloud_sync),
-            tooltip: 'Sincronizar Google Drive',
+            tooltip: 'Backup',
             onPressed: () {
-              // Navegará para a aba de backup/sync futuramente
+              // Leva à aba Configurações, onde fica o backup local
               setState(() => _currentIndex = 2);
             },
           ),
@@ -49,7 +50,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         children: [
           _buildLibraryTab(), // Aba 1: Biblioteca Geral
           _buildCustomListsTab(), // Aba 2: Minhas Listas Personalizadas
-          _buildSettingsTab(), // Aba 3: Configurações & Drive Sync
+          _buildSettingsTab(), // Aba 3: Configurações & Backup local
         ],
       ),
 
@@ -251,25 +252,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildSettingsTab() {
     return ListView(
       padding: const EdgeInsets.all(16),
-      children: [
-        const ListTile(
-          leading: Icon(Icons.account_circle, size: 40),
-          title: Text('Conta do Google'),
-          subtitle: Text('Não conectado'),
-        ),
-        const Divider(),
-        ElevatedButton.icon(
-          onPressed: () {},
-          icon: const Icon(Icons.cloud_upload),
-          label: const Text('Fazer Backup no Google Drive'),
-        ),
-        const SizedBox(height: 8),
-        OutlinedButton.icon(
-          onPressed: () {},
-          icon: const Icon(Icons.cloud_download),
-          label: const Text('Restaurar do Google Drive'),
-        ),
-      ],
+      children: const [BackupSection()],
     );
   }
 }

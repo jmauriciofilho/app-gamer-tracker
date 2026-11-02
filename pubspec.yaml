@@ -23,6 +23,9 @@ dependencies:
   flutter_rating_bar: ^4.0.1
   google_fonts: ^6.1.0
 
+  # Seletor de arquivos do sistema (backup local em JSON)
+  file_picker: ^13.3.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

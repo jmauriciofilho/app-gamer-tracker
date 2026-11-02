@@ -18,6 +18,7 @@
     - Estado: `flutter_riverpod` ^2.5.0 (lock 2.6.1; `Provider`, `AsyncNotifierProvider`, `FutureProvider`/`.family`)
     - Estilização: Material 3 + `google_fonts`, `cached_network_image`, `flutter_rating_bar`
     - Banco de Dados / ORM: Isar Community (`isar_community` ^3.3.2) local, via `path_provider`; schemas gerados por `isar_community_generator` + `build_runner` (arquivos `*.g.dart`)
+    - Arquivos: `file_picker` ^13.3.0 (seletor do sistema para salvar/abrir o backup JSON; no Android usa SAF, sem permissões)
     - Testes: `flutter_test` com repositórios falsos em memória via `ProviderScope(overrides: ...)` (`test/widget_test.dart`, `test/features/`)
 </tech_stack>
 
@@ -39,10 +40,10 @@
     - `lib/features/<feature>/data/models/` — coleções Isar (`@collection`) + `*.g.dart` gerados (não editar à mão).
     - `lib/features/<feature>/data/repositories/` — acesso ao Isar (escrita sempre em `writeTxn`).
     - `lib/features/<feature>/presentation/{providers,screens,widgets}/` — providers Riverpod, telas e widgets.
-    - Features atuais: `games` (CRUD completo + busca/filtro por status) e `custom_lists` (CRUD de listas por filtros; telas de lista, detalhe e formulário).
+    - Features atuais: `games` (CRUD completo + busca/filtro por status), `custom_lists` (CRUD de listas por filtros; telas de lista, detalhe e formulário) e `backup` (exportar/importar tudo em JSON; `BackupCodec`, `BackupRepository`, `BackupFileGateway` e `BackupSection` na aba Configurações).
     - Providers de repositório das duas features: `lib/features/games/presentation/providers/game_repository_provider.dart`.
     - `test/` — testes `flutter_test` (`widget_test.dart` + `test/features/<feature>/`).
-  - **Pontos de entrada:** `lib/main.dart` (`ProviderScope` → `MyApp` → `HomeScreen`, com `NavigationBar` + `IndexedStack` nas abas Jogos e Listas).
+  - **Pontos de entrada:** `lib/main.dart` (`ProviderScope` → `MyApp` → `HomeScreen`, com `NavigationBar` + `IndexedStack` nas abas Biblioteca, Minhas Listas e Ajustes & Sync, esta com o backup local).
 </architecture>
 
 <coding_guidelines>
