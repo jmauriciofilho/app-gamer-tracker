@@ -20,3 +20,4 @@ Categorias: `build`, `test`, `arquitetura`, `convenção`, `armadilha`, `prefer�
 - [2026-11-02] [armadilha] No Isar o nulo é menor que qualquer valor: `releaseYearLessThan(x)` também traz jogos sem ano. → Para intervalo opcional, usar `...Between(from ?? 0, to ?? 9999)`, que exclui nulos.
 - [2026-11-02] [test] Ler `customListGamesProvider(id).future` num `ProviderContainer` sem ouvinte trava (o provider é descartado no loading). → Sempre `container.listen(provider, (_, _) {})` antes do `read(...future)`.
 - [2026-11-02] [test] O formulário de lista passa da altura do teste (800×600). → Chamar `tester.ensureVisible` antes de tocar em "Criar Lista" ou "Salvar Alterações".
+- [2026-11-02] [ambiente] Testar no app real = emulador Android `Pixel_9` (o desktop Linux não aparece em `flutter devices`). → Usar a skill `run-game-tracker` (`driver.py launch/tapl/dump/shot/stop`); nunca usar a tecla voltar para fechar o teclado (fecha o app).

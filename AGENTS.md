@@ -67,6 +67,7 @@ leia o `SKILL.md` correspondente sempre que o gatilho abaixo ocorrer e siga-o ri
 | `context-sync` | Suspeita de `project_instructions.md` desatualizado; após mudanças estruturais |
 | `migracao-upgrade` | Atualização de versões/frameworks |
 | `memoria` | Fim de cada tarefa |
+| `run-game-tracker` | Rodar o app no emulador, testar no app real, screenshot |
 
 ## 5. Subagentes e ferramentas
 
