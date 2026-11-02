@@ -81,8 +81,14 @@ class CustomListCard extends ConsumerWidget {
   /// Monta a lista de filtros preenchidos com ícone e rótulo
   List<({IconData icon, String label})> _activeFilters() {
     final status = customList.filterStatus;
+    final releaseYears = _formatReleaseYears(
+      customList.filterReleaseYearFrom,
+      customList.filterReleaseYearTo,
+    );
 
     return [
+      if (customList.filterTitle != null)
+        (icon: Icons.title, label: customList.filterTitle!),
       if (customList.filterDeveloper != null)
         (icon: Icons.business, label: customList.filterDeveloper!),
       if (customList.filterPlatform != null)
@@ -90,7 +96,22 @@ class CustomListCard extends ConsumerWidget {
       if (customList.filterGenre != null)
         (icon: Icons.category, label: customList.filterGenre!),
       if (status != null) (icon: Icons.flag, label: GameStatus.labelOf(status)),
+      if (releaseYears != null)
+        (icon: Icons.calendar_today, label: releaseYears),
+      if (customList.filterEndYear != null)
+        (
+          icon: Icons.event_available,
+          label: 'Terminados em ${customList.filterEndYear}',
+        ),
     ];
+  }
+
+  /// Descreve o intervalo de ano de lançamento (nulo se nenhum lado foi informado)
+  String? _formatReleaseYears(int? from, int? to) {
+    if (from != null && to != null) return '$from–$to';
+    if (from != null) return 'A partir de $from';
+    if (to != null) return 'Até $to';
+    return null;
   }
 
   /// Formata a contagem respeitando singular e plural

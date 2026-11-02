@@ -44,12 +44,23 @@ class FakeGameRepository extends GameRepository {
     String? platform,
     String? genre,
     String? status,
+    String? title,
+    int? releaseYearFrom,
+    int? releaseYearTo,
+    int? endYear,
   }) async {
-    // Mesma semântica do repositório real: igualdade exata, sem diferenciar maiúsculas
+    // Mesma semântica do repositório real: textos por "contém", sem diferenciar maiúsculas
     bool matches(String? value, String? filter) =>
         filter == null ||
         filter.isEmpty ||
-        (value != null && value.toLowerCase() == filter.toLowerCase());
+        (value != null && value.toLowerCase().contains(filter.toLowerCase()));
+
+    // Anos inclusivos; jogo sem ano fica de fora quando o intervalo está ativo
+    bool inYearRange(int? year) =>
+        (releaseYearFrom == null && releaseYearTo == null) ||
+        (year != null &&
+            year >= (releaseYearFrom ?? 0) &&
+            year <= (releaseYearTo ?? 9999));
 
     return games
         .where(
@@ -57,7 +68,10 @@ class FakeGameRepository extends GameRepository {
               matches(game.developer, developer) &&
               matches(game.platform, platform) &&
               matches(game.genre, genre) &&
-              (status == null || status.isEmpty || game.status == status),
+              matches(game.title, title) &&
+              (status == null || status.isEmpty || game.status == status) &&
+              inYearRange(game.releaseYear) &&
+              (endYear == null || game.endDate?.year == endYear),
         )
         .toList();
   }
@@ -275,6 +289,7 @@ void main() {
     await _pumpForm(tester, FakeGameRepository(), listRepo);
 
     // Act / Assert: nome vazio
+    await tester.ensureVisible(find.text('Criar Lista'));
     await tester.tap(find.text('Criar Lista'));
     await tester.pumpAndSettle();
     expect(find.text('Informe o nome da lista'), findsOneWidget);
@@ -285,6 +300,7 @@ void main() {
       find.widgetWithText(TextFormField, 'Nome da Lista *'),
       '  RPGs ',
     );
+    await tester.ensureVisible(find.text('Criar Lista'));
     await tester.tap(find.text('Criar Lista'));
     await tester.pumpAndSettle();
     expect(find.text('Preencha pelo menos um filtro'), findsOneWidget);
@@ -292,6 +308,7 @@ void main() {
 
     // Act / Assert: nome e gênero com espaços extras
     await tester.enterText(_fieldInput('filterGenreField'), ' RPG ');
+    await tester.ensureVisible(find.text('Criar Lista'));
     await tester.tap(find.text('Criar Lista'));
     await tester.pumpAndSettle();
 
@@ -323,6 +340,7 @@ void main() {
       find.widgetWithText(TextFormField, 'Nome da Lista *'),
       'RPGs Favoritos',
     );
+    await tester.ensureVisible(find.text('Salvar Alterações'));
     await tester.tap(find.text('Salvar Alterações'));
     await tester.pumpAndSettle();
 
@@ -434,5 +452,332 @@ void main() {
       await container.read(customListGamesProvider(1).future),
       hasLength(2),
     );
+  });
+
+  // ==========================================
+  // FILTROS NOVOS (spec filtros-novos-listas)
+  // ==========================================
+
+  // R1 → AC1
+  testWidgets('detalhe filtra por título contém sem diferenciar maiúsculas', (
+    WidgetTester tester,
+  ) async {
+    // Arrange
+    final gameRepo = FakeGameRepository([
+      _game(1, 'Final Fantasy VII'),
+      _game(2, 'Final Fantasy X'),
+      _game(3, 'Doom'),
+    ]);
+    final listRepo = FakeCustomListRepository([
+      CustomList()
+        ..id = 1
+        ..name = 'Série FF'
+        ..filterTitle = 'fantasy',
+    ]);
+    await _pumpListsTab(tester, gameRepo, listRepo);
+
+    // Act
+    await tester.tap(find.text('Série FF'));
+    await tester.pumpAndSettle();
+
+    // Assert
+    expect(find.text('Final Fantasy VII'), findsOneWidget);
+    expect(find.text('Final Fantasy X'), findsOneWidget);
+    expect(find.text('Doom'), findsNothing);
+  });
+
+  // R2 → AC2
+  test(
+    'intervalo de ano de lançamento é inclusivo e ignora jogos sem ano',
+    () async {
+      // Arrange
+      Game withYear(int id, int? year) =>
+          _game(id, 'Jogo $id')..releaseYear = year;
+      final gameRepo = FakeGameRepository([
+        withYear(1, 1994),
+        withYear(2, 1995),
+        withYear(3, 2000),
+        withYear(4, 2001),
+        withYear(5, null),
+      ]);
+      final listRepo = FakeCustomListRepository([
+        CustomList()
+          ..id = 1
+          ..name = 'Fechado'
+          ..filterReleaseYearFrom = 1995
+          ..filterReleaseYearTo = 2000,
+        CustomList()
+          ..id = 2
+          ..name = 'Só de'
+          ..filterReleaseYearFrom = 2000,
+        CustomList()
+          ..id = 3
+          ..name = 'Só até'
+          ..filterReleaseYearTo = 1995,
+      ]);
+      final container = ProviderContainer(
+        overrides: _overrides(gameRepo, listRepo),
+      );
+      addTearDown(container.dispose);
+
+      // Act
+      // Ouvinte ativo, como no teste de reavaliação: sem ele o provider é descartado no loading
+      Future<List<int>> idsOf(int listId) async {
+        container.listen(customListGamesProvider(listId), (previous, next) {});
+        final games = await container.read(
+          customListGamesProvider(listId).future,
+        );
+        return games.map((game) => game.id).toList();
+      }
+
+      // Assert
+      expect(await idsOf(1), [2, 3]);
+      expect(await idsOf(2), [3, 4]);
+      expect(await idsOf(3), [1, 2]);
+    },
+  );
+
+  // R3 → AC3
+  test('ano de término respeita os limites do ano civil', () async {
+    // Arrange
+    Game endedAt(int id, DateTime? date) =>
+        _game(id, 'Jogo $id')..endDate = date;
+    final gameRepo = FakeGameRepository([
+      endedAt(1, DateTime(2025, 12, 31)),
+      endedAt(2, DateTime(2026, 1, 1)),
+      endedAt(3, DateTime(2026, 12, 31)),
+      endedAt(4, null),
+    ]);
+    final listRepo = FakeCustomListRepository([
+      CustomList()
+        ..id = 1
+        ..name = 'Terminados 2026'
+        ..filterEndYear = 2026,
+    ]);
+    final container = ProviderContainer(
+      overrides: _overrides(gameRepo, listRepo),
+    );
+    addTearDown(container.dispose);
+    container.listen(customListGamesProvider(1), (previous, next) {});
+
+    // Act
+    final games = await container.read(customListGamesProvider(1).future);
+
+    // Assert
+    expect(games.map((game) => game.id), [2, 3]);
+  });
+
+  // R4 → AC4
+  test('plataforma compara por "contém" sem diferenciar maiúsculas', () async {
+    // Arrange
+    final gameRepo = FakeGameRepository([
+      _game(1, 'Shadow of the Colossus')..platform = 'PlayStation 2',
+      _game(2, 'Half-Life')..platform = 'PC',
+    ]);
+    final listRepo = FakeCustomListRepository([
+      CustomList()
+        ..id = 1
+        ..name = 'PlayStation'
+        ..filterPlatform = 'playstation',
+    ]);
+    final container = ProviderContainer(
+      overrides: _overrides(gameRepo, listRepo),
+    );
+    addTearDown(container.dispose);
+    container.listen(customListGamesProvider(1), (previous, next) {});
+
+    // Act
+    final games = await container.read(customListGamesProvider(1).future);
+
+    // Assert
+    expect(games.map((game) => game.id), [1]);
+  });
+
+  // R5 → AC5
+  testWidgets('formulário salva título e ano com trim e nulos', (
+    WidgetTester tester,
+  ) async {
+    // Arrange
+    final listRepo = FakeCustomListRepository();
+    await _pumpForm(tester, FakeGameRepository(), listRepo);
+
+    // Act
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Nome da Lista *'),
+      'Final Fantasy anos 90',
+    );
+    await tester.enterText(
+      find.byKey(const Key('filterTitleField')),
+      ' Final Fantasy ',
+    );
+    await tester.enterText(
+      find.byKey(const Key('filterReleaseYearFromField')),
+      '1995',
+    );
+    await tester.ensureVisible(find.text('Criar Lista'));
+    await tester.tap(find.text('Criar Lista'));
+    await tester.pumpAndSettle();
+
+    // Assert
+    expect(listRepo.lists, hasLength(1));
+    final saved = listRepo.lists.single;
+    expect(saved.filterTitle, 'Final Fantasy');
+    expect(saved.filterReleaseYearFrom, 1995);
+    expect(saved.filterReleaseYearTo, isNull);
+    expect(saved.filterEndYear, isNull);
+    expect(saved.filterDeveloper, isNull);
+    expect(saved.filterPlatform, isNull);
+    expect(saved.filterGenre, isNull);
+    expect(saved.filterStatus, isNull);
+  });
+
+  // R5 → AC5
+  testWidgets('ano de término sozinho já conta como filtro', (
+    WidgetTester tester,
+  ) async {
+    // Arrange
+    final listRepo = FakeCustomListRepository();
+    await _pumpForm(tester, FakeGameRepository(), listRepo);
+
+    // Act
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Nome da Lista *'),
+      'Zerados 2026',
+    );
+    await tester.enterText(find.byKey(const Key('filterEndYearField')), '2026');
+    await tester.ensureVisible(find.text('Criar Lista'));
+    await tester.tap(find.text('Criar Lista'));
+    await tester.pumpAndSettle();
+
+    // Assert
+    expect(find.text('Preencha pelo menos um filtro'), findsNothing);
+    expect(listRepo.lists.single.filterEndYear, 2026);
+  });
+
+  // R5 → AC5
+  testWidgets('edição pré-preenche os filtros novos', (
+    WidgetTester tester,
+  ) async {
+    // Arrange
+    final existing = CustomList()
+      ..id = 1
+      ..name = 'Clássicos'
+      ..filterTitle = 'Mario'
+      ..filterReleaseYearFrom = 1985
+      ..filterReleaseYearTo = 1999
+      ..filterEndYear = 2026;
+
+    // Act
+    await _pumpForm(
+      tester,
+      FakeGameRepository(),
+      FakeCustomListRepository([existing]),
+      listToEdit: existing,
+    );
+
+    // Assert
+    String textOf(String key) =>
+        tester.widget<TextFormField>(find.byKey(Key(key))).controller!.text;
+    expect(textOf('filterTitleField'), 'Mario');
+    expect(textOf('filterReleaseYearFromField'), '1985');
+    expect(textOf('filterReleaseYearToField'), '1999');
+    expect(textOf('filterEndYearField'), '2026');
+  });
+
+  // R6 → AC6
+  testWidgets('ano inválido e intervalo invertido não salvam', (
+    WidgetTester tester,
+  ) async {
+    // Arrange
+    final listRepo = FakeCustomListRepository();
+    await _pumpForm(tester, FakeGameRepository(), listRepo);
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Nome da Lista *'),
+      'Anos',
+    );
+
+    // Act / Assert: ano com 2 dígitos
+    await tester.enterText(
+      find.byKey(const Key('filterReleaseYearFromField')),
+      '95',
+    );
+    await tester.ensureVisible(find.text('Criar Lista'));
+    await tester.tap(find.text('Criar Lista'));
+    await tester.pumpAndSettle();
+    expect(find.text('Ano inválido'), findsOneWidget);
+    expect(listRepo.lists, isEmpty);
+
+    // Act / Assert: início maior que o fim
+    await tester.enterText(
+      find.byKey(const Key('filterReleaseYearFromField')),
+      '2001',
+    );
+    await tester.enterText(
+      find.byKey(const Key('filterReleaseYearToField')),
+      '2000',
+    );
+    await tester.ensureVisible(find.text('Criar Lista'));
+    await tester.tap(find.text('Criar Lista'));
+    await tester.pumpAndSettle();
+    expect(find.text('Ano inicial maior que o final'), findsOneWidget);
+    expect(listRepo.lists, isEmpty);
+  });
+
+  // R7 → AC7
+  testWidgets('card mostra chips dos filtros novos', (
+    WidgetTester tester,
+  ) async {
+    // Arrange
+    final listRepo = FakeCustomListRepository([
+      CustomList()
+        ..id = 1
+        ..name = 'A'
+        ..filterTitle = 'Final Fantasy'
+        ..filterReleaseYearFrom = 1995
+        ..filterReleaseYearTo = 2000,
+      CustomList()
+        ..id = 2
+        ..name = 'B'
+        ..filterReleaseYearFrom = 1995,
+      CustomList()
+        ..id = 3
+        ..name = 'C'
+        ..filterReleaseYearTo = 2000,
+      CustomList()
+        ..id = 4
+        ..name = 'D'
+        ..filterEndYear = 2026,
+    ]);
+
+    // Act
+    await _pumpListsTab(tester, FakeGameRepository(), listRepo);
+
+    // Assert
+    expect(find.text('Final Fantasy'), findsOneWidget);
+    expect(find.text('1995–2000'), findsOneWidget);
+    expect(find.text('A partir de 1995'), findsOneWidget);
+    expect(find.text('Até 2000'), findsOneWidget);
+    expect(find.text('Terminados em 2026'), findsOneWidget);
+  });
+
+  // R8 → AC8
+  testWidgets('lista salva sem os campos novos abre no card e no detalhe', (
+    WidgetTester tester,
+  ) async {
+    // Arrange: lista como as já gravadas antes desta versão (campos novos nulos)
+    final gameRepo = FakeGameRepository([_game(1, 'Dark Souls', genre: 'RPG')]);
+    final listRepo = FakeCustomListRepository([_list(1, 'RPGs', genre: 'RPG')]);
+    await _pumpListsTab(tester, gameRepo, listRepo);
+
+    // Assert: card
+    expect(find.text('1 jogo'), findsOneWidget);
+
+    // Act
+    await tester.tap(find.text('RPGs'));
+    await tester.pumpAndSettle();
+
+    // Assert: detalhe
+    expect(tester.takeException(), isNull);
+    expect(find.text('Dark Souls'), findsOneWidget);
   });
 }

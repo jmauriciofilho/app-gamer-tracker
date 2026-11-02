@@ -71,6 +71,10 @@ final customListGamesProvider = FutureProvider.family<List<Game>, int>((
     platform: customList.filterPlatform,
     genre: customList.filterGenre,
     status: customList.filterStatus,
+    title: customList.filterTitle,
+    releaseYearFrom: customList.filterReleaseYearFrom,
+    releaseYearTo: customList.filterReleaseYearTo,
+    endYear: customList.filterEndYear,
   );
 });
 

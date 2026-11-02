@@ -22,22 +22,42 @@ const CustomListSchema = CollectionSchema(
       name: r'filterDeveloper',
       type: IsarType.string,
     ),
-    r'filterGenre': PropertySchema(
+    r'filterEndYear': PropertySchema(
       id: 1,
+      name: r'filterEndYear',
+      type: IsarType.long,
+    ),
+    r'filterGenre': PropertySchema(
+      id: 2,
       name: r'filterGenre',
       type: IsarType.string,
     ),
     r'filterPlatform': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'filterPlatform',
       type: IsarType.string,
     ),
+    r'filterReleaseYearFrom': PropertySchema(
+      id: 4,
+      name: r'filterReleaseYearFrom',
+      type: IsarType.long,
+    ),
+    r'filterReleaseYearTo': PropertySchema(
+      id: 5,
+      name: r'filterReleaseYearTo',
+      type: IsarType.long,
+    ),
     r'filterStatus': PropertySchema(
-      id: 3,
+      id: 6,
       name: r'filterStatus',
       type: IsarType.string,
     ),
-    r'name': PropertySchema(id: 4, name: r'name', type: IsarType.string),
+    r'filterTitle': PropertySchema(
+      id: 7,
+      name: r'filterTitle',
+      type: IsarType.string,
+    ),
+    r'name': PropertySchema(id: 8, name: r'name', type: IsarType.string),
   },
 
   estimateSize: _customListEstimateSize,
@@ -85,6 +105,12 @@ int _customListEstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
+  {
+    final value = object.filterTitle;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   bytesCount += 3 + object.name.length * 3;
   return bytesCount;
 }
@@ -96,10 +122,14 @@ void _customListSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeString(offsets[0], object.filterDeveloper);
-  writer.writeString(offsets[1], object.filterGenre);
-  writer.writeString(offsets[2], object.filterPlatform);
-  writer.writeString(offsets[3], object.filterStatus);
-  writer.writeString(offsets[4], object.name);
+  writer.writeLong(offsets[1], object.filterEndYear);
+  writer.writeString(offsets[2], object.filterGenre);
+  writer.writeString(offsets[3], object.filterPlatform);
+  writer.writeLong(offsets[4], object.filterReleaseYearFrom);
+  writer.writeLong(offsets[5], object.filterReleaseYearTo);
+  writer.writeString(offsets[6], object.filterStatus);
+  writer.writeString(offsets[7], object.filterTitle);
+  writer.writeString(offsets[8], object.name);
 }
 
 CustomList _customListDeserialize(
@@ -110,11 +140,15 @@ CustomList _customListDeserialize(
 ) {
   final object = CustomList();
   object.filterDeveloper = reader.readStringOrNull(offsets[0]);
-  object.filterGenre = reader.readStringOrNull(offsets[1]);
-  object.filterPlatform = reader.readStringOrNull(offsets[2]);
-  object.filterStatus = reader.readStringOrNull(offsets[3]);
+  object.filterEndYear = reader.readLongOrNull(offsets[1]);
+  object.filterGenre = reader.readStringOrNull(offsets[2]);
+  object.filterPlatform = reader.readStringOrNull(offsets[3]);
+  object.filterReleaseYearFrom = reader.readLongOrNull(offsets[4]);
+  object.filterReleaseYearTo = reader.readLongOrNull(offsets[5]);
+  object.filterStatus = reader.readStringOrNull(offsets[6]);
+  object.filterTitle = reader.readStringOrNull(offsets[7]);
   object.id = id;
-  object.name = reader.readString(offsets[4]);
+  object.name = reader.readString(offsets[8]);
   return object;
 }
 
@@ -128,12 +162,20 @@ P _customListDeserializeProp<P>(
     case 0:
       return (reader.readStringOrNull(offset)) as P;
     case 1:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readLongOrNull(offset)) as P;
     case 2:
       return (reader.readStringOrNull(offset)) as P;
     case 3:
       return (reader.readStringOrNull(offset)) as P;
     case 4:
+      return (reader.readLongOrNull(offset)) as P;
+    case 5:
+      return (reader.readLongOrNull(offset)) as P;
+    case 6:
+      return (reader.readStringOrNull(offset)) as P;
+    case 7:
+      return (reader.readStringOrNull(offset)) as P;
+    case 8:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -389,6 +431,79 @@ extension CustomListQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.greaterThan(property: r'filterDeveloper', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterFilterCondition>
+  filterEndYearIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'filterEndYear'),
+      );
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterFilterCondition>
+  filterEndYearIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'filterEndYear'),
+      );
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterFilterCondition>
+  filterEndYearEqualTo(int? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'filterEndYear', value: value),
+      );
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterFilterCondition>
+  filterEndYearGreaterThan(int? value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'filterEndYear',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterFilterCondition>
+  filterEndYearLessThan(int? value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'filterEndYear',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterFilterCondition>
+  filterEndYearBetween(
+    int? lower,
+    int? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'filterEndYear',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
       );
     });
   }
@@ -712,6 +827,155 @@ extension CustomListQueryFilter
   }
 
   QueryBuilder<CustomList, CustomList, QAfterFilterCondition>
+  filterReleaseYearFromIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'filterReleaseYearFrom'),
+      );
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterFilterCondition>
+  filterReleaseYearFromIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'filterReleaseYearFrom'),
+      );
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterFilterCondition>
+  filterReleaseYearFromEqualTo(int? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'filterReleaseYearFrom',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterFilterCondition>
+  filterReleaseYearFromGreaterThan(int? value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'filterReleaseYearFrom',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterFilterCondition>
+  filterReleaseYearFromLessThan(int? value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'filterReleaseYearFrom',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterFilterCondition>
+  filterReleaseYearFromBetween(
+    int? lower,
+    int? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'filterReleaseYearFrom',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterFilterCondition>
+  filterReleaseYearToIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'filterReleaseYearTo'),
+      );
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterFilterCondition>
+  filterReleaseYearToIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'filterReleaseYearTo'),
+      );
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterFilterCondition>
+  filterReleaseYearToEqualTo(int? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'filterReleaseYearTo', value: value),
+      );
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterFilterCondition>
+  filterReleaseYearToGreaterThan(int? value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'filterReleaseYearTo',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterFilterCondition>
+  filterReleaseYearToLessThan(int? value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'filterReleaseYearTo',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterFilterCondition>
+  filterReleaseYearToBetween(
+    int? lower,
+    int? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'filterReleaseYearTo',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterFilterCondition>
   filterStatusIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -866,6 +1130,165 @@ extension CustomListQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.greaterThan(property: r'filterStatus', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterFilterCondition>
+  filterTitleIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'filterTitle'),
+      );
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterFilterCondition>
+  filterTitleIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'filterTitle'),
+      );
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterFilterCondition>
+  filterTitleEqualTo(String? value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'filterTitle',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterFilterCondition>
+  filterTitleGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'filterTitle',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterFilterCondition>
+  filterTitleLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'filterTitle',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterFilterCondition>
+  filterTitleBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'filterTitle',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterFilterCondition>
+  filterTitleStartsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'filterTitle',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterFilterCondition>
+  filterTitleEndsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'filterTitle',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterFilterCondition>
+  filterTitleContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'filterTitle',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterFilterCondition>
+  filterTitleMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'filterTitle',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterFilterCondition>
+  filterTitleIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'filterTitle', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterFilterCondition>
+  filterTitleIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'filterTitle', value: ''),
       );
     });
   }
@@ -1097,6 +1520,18 @@ extension CustomListQuerySortBy
     });
   }
 
+  QueryBuilder<CustomList, CustomList, QAfterSortBy> sortByFilterEndYear() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'filterEndYear', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterSortBy> sortByFilterEndYearDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'filterEndYear', Sort.desc);
+    });
+  }
+
   QueryBuilder<CustomList, CustomList, QAfterSortBy> sortByFilterGenre() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'filterGenre', Sort.asc);
@@ -1122,6 +1557,34 @@ extension CustomListQuerySortBy
     });
   }
 
+  QueryBuilder<CustomList, CustomList, QAfterSortBy>
+  sortByFilterReleaseYearFrom() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'filterReleaseYearFrom', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterSortBy>
+  sortByFilterReleaseYearFromDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'filterReleaseYearFrom', Sort.desc);
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterSortBy>
+  sortByFilterReleaseYearTo() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'filterReleaseYearTo', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterSortBy>
+  sortByFilterReleaseYearToDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'filterReleaseYearTo', Sort.desc);
+    });
+  }
+
   QueryBuilder<CustomList, CustomList, QAfterSortBy> sortByFilterStatus() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'filterStatus', Sort.asc);
@@ -1131,6 +1594,18 @@ extension CustomListQuerySortBy
   QueryBuilder<CustomList, CustomList, QAfterSortBy> sortByFilterStatusDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'filterStatus', Sort.desc);
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterSortBy> sortByFilterTitle() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'filterTitle', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterSortBy> sortByFilterTitleDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'filterTitle', Sort.desc);
     });
   }
 
@@ -1162,6 +1637,18 @@ extension CustomListQuerySortThenBy
     });
   }
 
+  QueryBuilder<CustomList, CustomList, QAfterSortBy> thenByFilterEndYear() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'filterEndYear', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterSortBy> thenByFilterEndYearDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'filterEndYear', Sort.desc);
+    });
+  }
+
   QueryBuilder<CustomList, CustomList, QAfterSortBy> thenByFilterGenre() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'filterGenre', Sort.asc);
@@ -1187,6 +1674,34 @@ extension CustomListQuerySortThenBy
     });
   }
 
+  QueryBuilder<CustomList, CustomList, QAfterSortBy>
+  thenByFilterReleaseYearFrom() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'filterReleaseYearFrom', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterSortBy>
+  thenByFilterReleaseYearFromDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'filterReleaseYearFrom', Sort.desc);
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterSortBy>
+  thenByFilterReleaseYearTo() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'filterReleaseYearTo', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterSortBy>
+  thenByFilterReleaseYearToDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'filterReleaseYearTo', Sort.desc);
+    });
+  }
+
   QueryBuilder<CustomList, CustomList, QAfterSortBy> thenByFilterStatus() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'filterStatus', Sort.asc);
@@ -1196,6 +1711,18 @@ extension CustomListQuerySortThenBy
   QueryBuilder<CustomList, CustomList, QAfterSortBy> thenByFilterStatusDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'filterStatus', Sort.desc);
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterSortBy> thenByFilterTitle() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'filterTitle', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QAfterSortBy> thenByFilterTitleDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'filterTitle', Sort.desc);
     });
   }
 
@@ -1237,6 +1764,12 @@ extension CustomListQueryWhereDistinct
     });
   }
 
+  QueryBuilder<CustomList, CustomList, QDistinct> distinctByFilterEndYear() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'filterEndYear');
+    });
+  }
+
   QueryBuilder<CustomList, CustomList, QDistinct> distinctByFilterGenre({
     bool caseSensitive = true,
   }) {
@@ -1256,11 +1789,33 @@ extension CustomListQueryWhereDistinct
     });
   }
 
+  QueryBuilder<CustomList, CustomList, QDistinct>
+  distinctByFilterReleaseYearFrom() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'filterReleaseYearFrom');
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QDistinct>
+  distinctByFilterReleaseYearTo() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'filterReleaseYearTo');
+    });
+  }
+
   QueryBuilder<CustomList, CustomList, QDistinct> distinctByFilterStatus({
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'filterStatus', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<CustomList, CustomList, QDistinct> distinctByFilterTitle({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'filterTitle', caseSensitive: caseSensitive);
     });
   }
 
@@ -1288,6 +1843,12 @@ extension CustomListQueryProperty
     });
   }
 
+  QueryBuilder<CustomList, int?, QQueryOperations> filterEndYearProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'filterEndYear');
+    });
+  }
+
   QueryBuilder<CustomList, String?, QQueryOperations> filterGenreProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'filterGenre');
@@ -1300,9 +1861,29 @@ extension CustomListQueryProperty
     });
   }
 
+  QueryBuilder<CustomList, int?, QQueryOperations>
+  filterReleaseYearFromProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'filterReleaseYearFrom');
+    });
+  }
+
+  QueryBuilder<CustomList, int?, QQueryOperations>
+  filterReleaseYearToProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'filterReleaseYearTo');
+    });
+  }
+
   QueryBuilder<CustomList, String?, QQueryOperations> filterStatusProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'filterStatus');
+    });
+  }
+
+  QueryBuilder<CustomList, String?, QQueryOperations> filterTitleProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'filterTitle');
     });
   }
 

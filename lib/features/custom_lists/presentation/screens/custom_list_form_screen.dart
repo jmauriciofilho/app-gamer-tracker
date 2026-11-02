@@ -23,6 +23,10 @@ class _CustomListFormScreenState extends ConsumerState<CustomListFormScreen> {
   late TextEditingController _developerController;
   late TextEditingController _platformController;
   late TextEditingController _genreController;
+  late TextEditingController _titleController;
+  late TextEditingController _releaseYearFromController;
+  late TextEditingController _releaseYearToController;
+  late TextEditingController _endYearController;
 
   // Status selecionado (nulo = "Qualquer")
   String? _selectedStatus;
@@ -46,6 +50,18 @@ class _CustomListFormScreenState extends ConsumerState<CustomListFormScreen> {
     _genreController = TextEditingController(
       text: customList?.filterGenre ?? '',
     );
+    _titleController = TextEditingController(
+      text: customList?.filterTitle ?? '',
+    );
+    _releaseYearFromController = TextEditingController(
+      text: customList?.filterReleaseYearFrom?.toString() ?? '',
+    );
+    _releaseYearToController = TextEditingController(
+      text: customList?.filterReleaseYearTo?.toString() ?? '',
+    );
+    _endYearController = TextEditingController(
+      text: customList?.filterEndYear?.toString() ?? '',
+    );
     _selectedStatus = customList?.filterStatus;
   }
 
@@ -55,6 +71,10 @@ class _CustomListFormScreenState extends ConsumerState<CustomListFormScreen> {
     _developerController.dispose();
     _platformController.dispose();
     _genreController.dispose();
+    _titleController.dispose();
+    _releaseYearFromController.dispose();
+    _releaseYearToController.dispose();
+    _endYearController.dispose();
     super.dispose();
   }
 
@@ -64,6 +84,38 @@ class _CustomListFormScreenState extends ConsumerState<CustomListFormScreen> {
     return value.isEmpty ? null : value;
   }
 
+  /// Converte o texto do campo de ano em número (vazio ou inválido vira nulo)
+  int? _yearValue(TextEditingController controller) =>
+      int.tryParse(controller.text.trim());
+
+  /// Valida um campo de ano opcional: 4 dígitos entre 1950 e 2100
+  String? _validateYear(String? value) {
+    final text = value?.trim() ?? '';
+    if (text.isEmpty) return null;
+
+    final year = int.tryParse(text);
+    if (text.length != 4 || year == null || year < 1950 || year > 2100) {
+      return 'Ano inválido';
+    }
+    return null;
+  }
+
+  /// Valida o ano final do intervalo: mesmo formato e não menor que o inicial
+  String? _validateYearTo(String? value) {
+    final error = _validateYear(value);
+    if (error != null) return error;
+
+    final from = _yearValue(_releaseYearFromController);
+    final to = _yearValue(_releaseYearToController);
+    if (_validateYear(_releaseYearFromController.text) == null &&
+        from != null &&
+        to != null &&
+        from > to) {
+      return 'Ano inicial maior que o final';
+    }
+    return null;
+  }
+
   /// Valida e salva a lista no banco local Isar
   Future<void> _submitForm() async {
     final isNameValid = _formKey.currentState!.validate();
@@ -71,13 +123,21 @@ class _CustomListFormScreenState extends ConsumerState<CustomListFormScreen> {
     final developer = _filterValue(_developerController);
     final platform = _filterValue(_platformController);
     final genre = _filterValue(_genreController);
+    final title = _filterValue(_titleController);
+    final releaseYearFrom = _yearValue(_releaseYearFromController);
+    final releaseYearTo = _yearValue(_releaseYearToController);
+    final endYear = _yearValue(_endYearController);
 
     // Exige pelo menos um filtro preenchido
     final hasFilter =
         developer != null ||
         platform != null ||
         genre != null ||
-        _selectedStatus != null;
+        _selectedStatus != null ||
+        title != null ||
+        releaseYearFrom != null ||
+        releaseYearTo != null ||
+        endYear != null;
 
     setState(() {
       _filterError = hasFilter ? null : 'Preencha pelo menos um filtro';
@@ -93,6 +153,10 @@ class _CustomListFormScreenState extends ConsumerState<CustomListFormScreen> {
     customList.filterPlatform = platform;
     customList.filterGenre = genre;
     customList.filterStatus = _selectedStatus;
+    customList.filterTitle = title;
+    customList.filterReleaseYearFrom = releaseYearFrom;
+    customList.filterReleaseYearTo = releaseYearTo;
+    customList.filterEndYear = endYear;
 
     // Aguarda a gravação no Isar antes de fechar a tela
     try {
@@ -164,7 +228,19 @@ class _CustomListFormScreenState extends ConsumerState<CustomListFormScreen> {
               ),
               const SizedBox(height: 16),
 
-              // 2. FILTROS DE TEXTO COM AUTOCOMPLETAR
+              // 2. FILTRO DE TÍTULO (trecho do nome, sem autocompletar)
+              TextFormField(
+                key: const Key('filterTitleField'),
+                controller: _titleController,
+                decoration: const InputDecoration(
+                  labelText: 'Título contém',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.title),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // 3. FILTROS DE TEXTO COM AUTOCOMPLETAR
               _AutocompleteField(
                 key: const Key('filterDeveloperField'),
                 controller: _developerController,
@@ -190,7 +266,7 @@ class _CustomListFormScreenState extends ConsumerState<CustomListFormScreen> {
               ),
               const SizedBox(height: 16),
 
-              // 3. FILTRO DE STATUS (Dropdown)
+              // 4. FILTRO DE STATUS (Dropdown)
               DropdownButtonFormField<String?>(
                 key: const Key('filterStatusField'),
                 initialValue: _selectedStatus,
@@ -218,6 +294,55 @@ class _CustomListFormScreenState extends ConsumerState<CustomListFormScreen> {
                 },
               ),
 
+              const SizedBox(height: 16),
+
+              // 5. INTERVALO DE ANO DE LANÇAMENTO (ambos opcionais)
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      key: const Key('filterReleaseYearFromField'),
+                      controller: _releaseYearFromController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Lançado de',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.calendar_today),
+                      ),
+                      validator: _validateYear,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: TextFormField(
+                      key: const Key('filterReleaseYearToField'),
+                      controller: _releaseYearToController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Até',
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: _validateYearTo,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+
+              // 6. ANO DE TÉRMINO
+              TextFormField(
+                key: const Key('filterEndYearField'),
+                controller: _endYearController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'Terminados em (ano)',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.event_available),
+                ),
+                validator: _validateYear,
+              ),
+
               // Erro de validação dos filtros
               if (_filterError != null) ...[
                 const SizedBox(height: 12),
@@ -228,7 +353,7 @@ class _CustomListFormScreenState extends ConsumerState<CustomListFormScreen> {
               ],
               const SizedBox(height: 32),
 
-              // 4. BOTÃO SALVAR
+              // 7. BOTÃO SALVAR
               ElevatedButton.icon(
                 onPressed: _submitForm,
                 icon: const Icon(Icons.save),

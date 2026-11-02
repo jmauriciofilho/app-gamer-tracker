@@ -19,4 +19,10 @@ class CustomList {
   String? filterPlatform; // Ex: Se "PS1", traz apenas jogos de PlayStation 1
   String? filterGenre; // Ex: Se "RPG", traz apenas os do gênero RPG
   String? filterStatus; // Ex: Se "100%", traz apenas os que você platinou
+  String?
+  filterTitle; // Ex: Se "Final Fantasy", traz toda a série (título contém)
+  int?
+  filterReleaseYearFrom; // Ex: Se 1995, traz jogos lançados a partir de 1995
+  int? filterReleaseYearTo; // Ex: Se 2000, traz jogos lançados até 2000
+  int? filterEndYear; // Ex: Se 2026, traz jogos terminados em 2026
 }

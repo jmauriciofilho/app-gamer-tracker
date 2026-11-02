@@ -66,11 +66,17 @@ class GameRepository {
 
   /// Executa filtros combinados para responder às Listas Personalizadas
   /// Exemplo: Plataforma "PS1" + Desenvolvedora "FromSoftware"
+  /// Textos comparam por "contém" sem diferenciar maiúsculas; anos são inclusivos
+  /// e jogos sem o campo (ano de lançamento ou data de término) ficam de fora
   Future<List<Game>> getGamesByCustomFilter({
     String? developer,
     String? platform,
     String? genre,
     String? status,
+    String? title,
+    int? releaseYearFrom,
+    int? releaseYearTo,
+    int? endYear,
   }) async {
     final isar = await _db;
 
@@ -81,17 +87,17 @@ class GameRepository {
 
     // 2. Aplica o filtro de desenvolvedora se foi informado
     if (developer != null && developer.isNotEmpty) {
-      query = query.and().developerEqualTo(developer, caseSensitive: false);
+      query = query.and().developerContains(developer, caseSensitive: false);
     }
 
     // 3. Aplica o filtro de plataforma se foi informado
     if (platform != null && platform.isNotEmpty) {
-      query = query.and().platformEqualTo(platform, caseSensitive: false);
+      query = query.and().platformContains(platform, caseSensitive: false);
     }
 
     // 4. Aplica o filtro de gênero se foi informado
     if (genre != null && genre.isNotEmpty) {
-      query = query.and().genreEqualTo(genre, caseSensitive: false);
+      query = query.and().genreContains(genre, caseSensitive: false);
     }
 
     // 5. Aplica o filtro de status se foi informado
@@ -99,7 +105,30 @@ class GameRepository {
       query = query.and().statusEqualTo(status);
     }
 
-    // 6. Executa e retorna os jogos que atendem a TODOS os critérios
+    // 6. Aplica o filtro de título se foi informado
+    if (title != null && title.isNotEmpty) {
+      query = query.and().titleContains(title, caseSensitive: false);
+    }
+
+    // 7. Aplica o intervalo de ano de lançamento se algum lado foi informado
+    // No Isar o nulo é menor que qualquer valor: o limite inferior 0 exclui jogos sem ano
+    if (releaseYearFrom != null || releaseYearTo != null) {
+      query = query.and().releaseYearBetween(
+        releaseYearFrom ?? 0,
+        releaseYearTo ?? 9999,
+      );
+    }
+
+    // 8. Aplica o ano de término: de 1º de janeiro até antes de 1º de janeiro do ano seguinte
+    if (endYear != null) {
+      query = query.and().endDateBetween(
+        DateTime(endYear),
+        DateTime(endYear + 1),
+        includeUpper: false,
+      );
+    }
+
+    // 9. Executa e retorna os jogos que atendem a TODOS os critérios
     return await query.findAll();
   }
 

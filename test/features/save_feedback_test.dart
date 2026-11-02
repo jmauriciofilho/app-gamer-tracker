@@ -38,6 +38,10 @@ class FailingGameRepository extends GameRepository {
     String? platform,
     String? genre,
     String? status,
+    String? title,
+    int? releaseYearFrom,
+    int? releaseYearTo,
+    int? endYear,
   }) async => List.of(games);
 }
 
@@ -159,6 +163,7 @@ void main() {
     );
 
     // Act
+    await tester.ensureVisible(find.text('Criar Lista'));
     await tester.tap(find.text('Criar Lista'));
     await tester.pumpAndSettle();
 
