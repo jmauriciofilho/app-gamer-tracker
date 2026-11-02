@@ -2,7 +2,7 @@
     <!-- Capas (imagens da web) e busca de dados do jogo (Wikidata/Steam) -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="game_tracker"
+        android:label="Game Tracker"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
