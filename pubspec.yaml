@@ -26,6 +26,9 @@ dependencies:
   # Seletor de arquivos do sistema (backup local em JSON)
   file_picker: ^13.3.0
 
+  # Cliente HTTP (busca de dados do jogo no Wikidata/Steam)
+  http: ^1.6.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

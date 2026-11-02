@@ -19,6 +19,7 @@
     - Estilização: Material 3 + `google_fonts`, `cached_network_image`, `flutter_rating_bar`
     - Banco de Dados / ORM: Isar Community (`isar_community` ^3.3.2) local, via `path_provider`; schemas gerados por `isar_community_generator` + `build_runner` (arquivos `*.g.dart`)
     - Arquivos: `file_picker` ^13.3.0 (seletor do sistema para salvar/abrir o backup JSON; no Android usa SAF, sem permissões)
+    - Rede: `http` ^1.6.0 (busca de dados do jogo no Wikidata e HEAD de capa no CDN da Steam; testes com `MockClient`)
     - Testes: `flutter_test` com repositórios falsos em memória via `ProviderScope(overrides: ...)` (`test/widget_test.dart`, `test/features/`)
 </tech_stack>
 
@@ -40,7 +41,7 @@
     - `lib/features/<feature>/data/models/` — coleções Isar (`@collection`) + `*.g.dart` gerados (não editar à mão).
     - `lib/features/<feature>/data/repositories/` — acesso ao Isar (escrita sempre em `writeTxn`).
     - `lib/features/<feature>/presentation/{providers,screens,widgets}/` — providers Riverpod, telas e widgets.
-    - Features atuais: `games` (CRUD completo + busca/filtro por status), `custom_lists` (CRUD de listas por filtros; telas de lista, detalhe e formulário) e `backup` (exportar/importar tudo em JSON; `BackupCodec`, `BackupRepository`, `BackupFileGateway` e `BackupSection` na aba Configurações).
+    - Features atuais: `games` (CRUD completo + busca/filtro por status), `custom_lists` (CRUD de listas por filtros; telas de lista, detalhe e formulário), `game_lookup` (busca de dados do jogo no Wikidata + capa da Steam, aberta pelo botão no título do formulário de jogo; `GameLookupService`, `WikidataGameLookupService`, `GameLookupSheet`) e `backup` (exportar/importar tudo em JSON; `BackupCodec`, `BackupRepository`, `BackupFileGateway` e `BackupSection` na aba Configurações).
     - Providers de repositório das duas features: `lib/features/games/presentation/providers/game_repository_provider.dart`.
     - `test/` — testes `flutter_test` (`widget_test.dart` + `test/features/<feature>/`).
   - **Pontos de entrada:** `lib/main.dart` (`ProviderScope` → `MyApp` → `HomeScreen`, com `NavigationBar` + `IndexedStack` nas abas Biblioteca, Minhas Listas e Ajustes & Sync, esta com o backup local).
@@ -64,7 +65,7 @@
 <security>
   - Nunca commitar segredos, tokens ou `.env`.
   - Validar/sanitizar toda entrada externa (formulários, URLs de capa). Usar a query API do Isar (sem montar consultas por string).
-  - Áreas sensíveis do projeto: N/A (dados locais pessoais, sem rede além do carregamento de imagens de capa).
+  - Áreas sensíveis do projeto: chamadas de rede em `lib/features/game_lookup/data/wikidata_game_lookup_service.dart` (só `https` para `www.wikidata.org` e `shared.fastly.steamstatic.com`, `User-Agent` identificado, timeout de 10 s, nenhum dado além do termo buscado; sem chaves de API). Imagens de capa via `cached_network_image`. Permissão `INTERNET` declarada no manifest principal.
 </security>
 
 <definition_of_done>

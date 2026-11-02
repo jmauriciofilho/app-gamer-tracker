@@ -4,6 +4,8 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import '../../data/models/game.dart';
 import '../../data/models/game_status.dart';
 import '../providers/game_list_provider.dart';
+import '../../../game_lookup/data/models/game_lookup_result.dart';
+import '../../../game_lookup/presentation/widgets/game_lookup_sheet.dart';
 
 class GameFormScreen extends ConsumerStatefulWidget {
   final Game? gameToEdit; // Se for nulo, é criação. Se informado, é edição!
@@ -30,6 +32,9 @@ class _GameFormScreenState extends ConsumerState<GameFormScreen> {
   double _rating = 0.0;
   DateTime? _startDate;
   DateTime? _endDate;
+
+  // Plataformas do jogo escolhido na busca, oferecidas como chips (vazio = sem chips)
+  List<String> _platformOptions = [];
 
   @override
   void initState() {
@@ -87,6 +92,43 @@ class _GameFormScreenState extends ConsumerState<GameFormScreen> {
         }
       });
     }
+  }
+
+  /// Abre a busca de dados do jogo com o título digitado e aplica o resultado escolhido
+  Future<void> _openLookup() async {
+    final result = await showGameLookupSheet(
+      context,
+      initialQuery: _titleController.text,
+    );
+    if (result == null || !mounted) return;
+    _applyLookup(result);
+  }
+
+  /// Preenche o formulário com o jogo escolhido.
+  /// O título é sempre trocado (era o termo da busca); os demais campos só se estiverem vazios.
+  /// Status, nota e datas nunca mudam.
+  void _applyLookup(GameLookupResult result) {
+    void fillIfEmpty(TextEditingController controller, String? value) {
+      if (value != null && controller.text.trim().isEmpty) {
+        controller.text = value;
+      }
+    }
+
+    setState(() {
+      _titleController.text = result.title;
+      fillIfEmpty(_developerController, result.developer);
+      fillIfEmpty(_genreController, result.genre);
+      fillIfEmpty(_releaseYearController, result.releaseYear?.toString());
+      fillIfEmpty(_coverUrlController, result.coverUrl);
+
+      // Uma plataforma: preenche direto; várias: o usuário escolhe nos chips
+      if (result.platforms.length == 1) {
+        fillIfEmpty(_platformController, result.platforms.first);
+        _platformOptions = [];
+      } else {
+        _platformOptions = result.platforms;
+      }
+    });
   }
 
   /// Valida e salva o jogo no banco local Isar
@@ -163,10 +205,15 @@ class _GameFormScreenState extends ConsumerState<GameFormScreen> {
               // 1. TÍTULO DO JOGO (Obrigatório)
               TextFormField(
                 controller: _titleController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Título do Jogo *',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.videogame_asset),
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.videogame_asset),
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.travel_explore),
+                    tooltip: 'Buscar dados do jogo',
+                    onPressed: _openLookup,
+                  ),
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
@@ -239,6 +286,30 @@ class _GameFormScreenState extends ConsumerState<GameFormScreen> {
                   ),
                 ],
               ),
+
+              // Plataformas do jogo escolhido na busca (um toque preenche o campo)
+              if (_platformOptions.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                const Text(
+                  'Plataformas deste jogo:',
+                  style: TextStyle(color: Colors.grey, fontSize: 12),
+                ),
+                const SizedBox(height: 4),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  children: [
+                    for (final platform in _platformOptions)
+                      ActionChip(
+                        label: Text(platform),
+                        onPressed: () => setState(() {
+                          _platformController.text = platform;
+                          _platformOptions = [];
+                        }),
+                      ),
+                  ],
+                ),
+              ],
               const SizedBox(height: 16),
 
               // 5. GÊNERO & ANO DE LANÇAMENTO (2 Colunas)
