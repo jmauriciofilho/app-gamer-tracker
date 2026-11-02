@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/custom_list.dart';
+import '../../../games/data/models/game_status.dart';
 import '../providers/custom_list_provider.dart';
-import '../widgets/custom_list_card.dart';
 
 class CustomListFormScreen extends ConsumerStatefulWidget {
   final CustomList?
@@ -204,10 +204,10 @@ class _CustomListFormScreenState extends ConsumerState<CustomListFormScreen> {
                     value: null,
                     child: Text('Qualquer'),
                   ),
-                  ...customListStatusLabels.entries.map(
+                  ...GameStatus.values.map(
                     (status) => DropdownMenuItem<String?>(
-                      value: status.key,
-                      child: Text(status.value),
+                      value: status.id,
+                      child: Text(status.label),
                     ),
                   ),
                 ],

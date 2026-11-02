@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../data/models/game_status.dart';
 import '../providers/game_list_provider.dart';
 import '../widgets/game_card.dart';
 import 'game_form_screen.dart';
@@ -21,11 +22,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   // Lista de status para os chips de filtro
   final List<Map<String, String>> _statusFilters = [
     {'id': '', 'label': 'Todos'},
-    {'id': 'para_jogar', 'label': 'Para Jogar'},
-    {'id': 'jogando', 'label': 'Jogando'},
-    {'id': 'jogado', 'label': 'Jogado'},
-    {'id': 'finalizado', 'label': 'Finalizado'},
-    {'id': '100%', 'label': '100%'},
+    for (final status in GameStatus.values)
+      {'id': status.id, 'label': status.label},
   ];
 
   @override

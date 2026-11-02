@@ -1,16 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/custom_list.dart';
+import '../../../games/data/models/game_status.dart';
 import '../providers/custom_list_provider.dart';
-
-/// Status disponíveis para o filtro das listas (id interno → rótulo exibido)
-const Map<String, String> customListStatusLabels = {
-  'para_jogar': 'Para Jogar',
-  'jogando': 'Jogando',
-  'jogado': 'Jogado',
-  'finalizado': 'Finalizado',
-  '100%': '100%',
-};
 
 class CustomListCard extends ConsumerWidget {
   final CustomList customList;
@@ -97,8 +89,7 @@ class CustomListCard extends ConsumerWidget {
         (icon: Icons.devices, label: customList.filterPlatform!),
       if (customList.filterGenre != null)
         (icon: Icons.category, label: customList.filterGenre!),
-      if (status != null)
-        (icon: Icons.flag, label: customListStatusLabels[status] ?? status),
+      if (status != null) (icon: Icons.flag, label: GameStatus.labelOf(status)),
     ];
   }
 

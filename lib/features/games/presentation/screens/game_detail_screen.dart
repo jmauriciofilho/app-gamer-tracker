@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../features/games/data/models/game.dart';
+import '../../data/models/game_status.dart';
 import '../providers/game_repository_provider.dart';
 import '../providers/game_list_provider.dart';
 import 'game_form_screen.dart';
@@ -109,7 +110,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
                       ),
                       Chip(
                         avatar: const Icon(Icons.flag, size: 18),
-                        label: Text(_formatStatus(_currentGame.status)),
+                        label: Text(GameStatus.labelOf(_currentGame.status)),
                         backgroundColor: _getStatusColor(
                           _currentGame.status,
                         ).withValues(alpha: 0.2),
@@ -247,19 +248,18 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
   }
 
   Color _getStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'para_jogar':
-      case 'para jogar':
+    switch (GameStatus.fromId(status)) {
+      case GameStatus.paraJogar:
         return Colors.blue;
-      case 'jogando':
+      case GameStatus.jogando:
         return Colors.orange;
-      case 'jogado':
+      case GameStatus.jogado:
         return Colors.purple;
-      case 'finalizado':
+      case GameStatus.finalizado:
         return Colors.green;
-      case '100%':
+      case GameStatus.completo:
         return Colors.amber;
-      default:
+      case null:
         return Colors.grey;
     }
   }
@@ -312,24 +312,5 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
         ],
       ),
     );
-  }
-
-  /// Converte a chave interna do status em um rótulo amigável para a tela
-  String _formatStatus(String status) {
-    switch (status.toLowerCase()) {
-      case 'para_jogar':
-      case 'para jogar':
-        return 'Para Jogar';
-      case 'jogando':
-        return 'Jogando';
-      case 'jogado':
-        return 'Jogado';
-      case 'finalizado':
-        return 'Finalizado';
-      case '100%':
-        return '100%';
-      default:
-        return status;
-    }
   }
 }

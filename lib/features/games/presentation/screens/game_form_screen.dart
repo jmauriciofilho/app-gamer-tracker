@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import '../../data/models/game.dart';
+import '../../data/models/game_status.dart';
 import '../providers/game_list_provider.dart';
 
 class GameFormScreen extends ConsumerStatefulWidget {
@@ -25,19 +26,10 @@ class _GameFormScreenState extends ConsumerState<GameFormScreen> {
   late TextEditingController _coverUrlController;
 
   // Campos de Seleção
-  String _selectedStatus = 'para_jogar';
+  String _selectedStatus = GameStatus.paraJogar.id;
   double _rating = 0.0;
   DateTime? _startDate;
   DateTime? _endDate;
-
-  // Lista de Status disponíveis
-  final List<Map<String, String>> _statusOptions = [
-    {'id': 'para_jogar', 'label': 'Para Jogar'},
-    {'id': 'jogando', 'label': 'Jogando'},
-    {'id': 'jogado', 'label': 'Jogado'},
-    {'id': 'finalizado', 'label': 'Finalizado'},
-    {'id': '100%', 'label': '100%'},
-  ];
 
   @override
   void initState() {
@@ -207,10 +199,10 @@ class _GameFormScreenState extends ConsumerState<GameFormScreen> {
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.flag),
                 ),
-                items: _statusOptions.map((status) {
+                items: GameStatus.values.map((status) {
                   return DropdownMenuItem<String>(
-                    value: status['id'],
-                    child: Text(status['label']!),
+                    value: status.id,
+                    child: Text(status.label),
                   );
                 }).toList(),
                 onChanged: (value) {

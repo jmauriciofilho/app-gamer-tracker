@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import '../../data/models/game.dart';
+import '../../data/models/game_status.dart';
 
 class GameCard extends StatelessWidget {
   final Game game;
@@ -117,7 +118,7 @@ class GameCard extends StatelessWidget {
 
                       // Indicador textual do Status
                       Text(
-                        _formatStatus(game.status),
+                        GameStatus.labelOf(game.status),
                         style: TextStyle(
                           fontSize: 10,
                           color: Colors.grey[400],
@@ -133,23 +134,5 @@ class GameCard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  /// Converte o id do status para um rótulo amigável
-  String _formatStatus(String status) {
-    switch (status) {
-      case 'para_jogar':
-        return 'Para Jogar';
-      case 'jogando':
-        return 'Jogando';
-      case 'jogado':
-        return 'Jogado';
-      case 'finalizado':
-        return 'Finalizado';
-      case '100%':
-        return '100%';
-      default:
-        return status;
-    }
   }
 }
